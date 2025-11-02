@@ -296,3 +296,4 @@ MonoBehaviour:
   YoungMaterial: {fileID: 2100000, guid: 1383ec6f186db2b41a3c36713b8d29aa, type: 2}
   NomalMaterial: {fileID: 2100000, guid: 4eb2358ae4734d541afd4b8e54a01205, type: 2}
   OldMaterial: {fileID: 2100000, guid: 27e9ac67317f2c142b83075032b811e6, type: 2}
+  MiningSkill: 1
