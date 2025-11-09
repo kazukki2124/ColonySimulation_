@@ -6,8 +6,10 @@ public class ColonistUIManager : MonoBehaviour
 
     private ColonistStatusUI colonistStatusUI;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    /// <summary>
+    /// Awake()はStart()を実行される前に、実行される初期化用のメソッドです
+    /// </summary>
+    void Awake()
     {
         //GetComponentInChildrenはHierarchyWindowの
         //このコンポーネントが追加されたgameObjectの階層下から取得する
