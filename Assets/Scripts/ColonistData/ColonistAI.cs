@@ -13,6 +13,7 @@ public class ColonistAI : MonoBehaviour
         Sleep,  // 就寝
         Carry,  // 運ぶ
         Rest,   // 休憩
+        Eat,    // 食事
         Dead    // 死亡
     }
 
@@ -121,6 +122,11 @@ public class ColonistAI : MonoBehaviour
     /// </summary>
     public Transform MarketPosition;
 
+    /// <summary>
+    /// ベーカリー(食事をする場所)の位置
+    /// </summary>
+    public Transform BakeryPosition;
+
     void Start()
     {
         //コロニストの状態をIdle(待機)から始める
@@ -134,7 +140,7 @@ public class ColonistAI : MonoBehaviour
         //コロニストの年齢を決める
         ColonistAge = Random.Range(18, 70);
         //コロニストの年齢が20まで
-        if (ColonistAge < 20)
+        if (ColonistAge < 30)
         {
             RecoveryRate = 2f;
             FatigueRate = 0.5f;
@@ -147,7 +153,7 @@ public class ColonistAI : MonoBehaviour
             }
         }
         //上のifの条件を満たしていなかったら
-        else if (ColonistAge < 40)
+        else if (ColonistAge < 50)
         {
             RecoveryRate = 1f;
             FatigueRate = 1f;
@@ -192,145 +198,266 @@ public class ColonistAI : MonoBehaviour
         // 1秒に1ポイントずつ、ストレスがかかっていきます
         stress += 1f * Time.deltaTime;
 
+        // ストレスが限界(100)を越えたら勝手に休憩に入る
+        if (stress >= 100f)
+        {
+            Debug.Log($"{name}はストレスが限界です!休憩に入ります！");
+            State = ColonistState.Rest;
+        }
+        // 空腹度が限界(30)を下回ったら勝手に休憩に入る
+        else if (hunger <= 30f)
+        {
+            Debug.Log($"{name}は空腹です!休憩に入ります！");
+            State = ColonistState.Eat;
+        }
+
         //小括弧の中の値(変数)を使って処理を分岐させます
         switch (State)
         {
             case ColonistState.Idle:
-
-                //現在の体力をじわじわっと回復させる
-                currentHealth += RecoveryRate * 2f * Time.deltaTime;
-
-                //caseとbreakの間に、caseの場合の処理を書く
-                //もしtimerが0秒を下回ったら
-                if (timer <= 0f)
-                {
-                    //コロニストの状態を"動く"という状態に変更
-                    State = ColonistState.Move;
-                    //移動場所を採掘場へ指定する
-                    targetPosition = MinePoint;
-                    timer = 2f;
-                }
+                HandleIdle();
                 break;
 
             case ColonistState.Move:
-                transform.position = Vector3.MoveTowards(
-                transform.position, targetPosition, MoveSpeed * Time.deltaTime);
-
-                //現在の体力値から1秒観で5ポイント体力を減らします
-                currentHealth -= FatigueRate * 5f * Time.deltaTime;
-
-                //現在の体力が20ポイントを下回ったら
-                if (currentHealth <= 20f)
-                {
-                    //体力を回復するためにSleepにする
-                    State = ColonistState.Sleep;
-                }
-
-                // if文はもし、小括弧内の条件だったら、中括弧内の処理を行う
-                // 自分の位置と、ターゲットの位置が10cmより近くなったら
-                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
-                {
-                    // 次の行動を行う
-                    State = ColonistState.Mine;
-                    //掘削時間が1～5秒の間でランダムになる。
-                    timer = Random.Range(3f, 5f);
-                }
+                HandleMove();
                 break;
 
             case ColonistState.Mine:
-                //仮で採掘アニメーション再生の代わりにログを出力します
-                Debug.Log("Colonist is mining!");
-
-                //毎フレーム回転させ続ける
-                //1秒間にMiningSkillが3の人は360°回転できる
-                transform.Rotate(Vector3.up * 120f * MiningSkill * Time.deltaTime);
-
-                //現在の体力を秒間10ポイント減少させる
-                currentHealth -= FatigueRate * 10f * Time.deltaTime;
-
-                //現在の体力が20ポイントより少なくなったら
-                if (currentHealth <= 20f)
-                {
-                    //体力を回復させるためにSleepにする
-                    State = ColonistState.Sleep;
-                }
-
-                if (timer <= 0f)
-                {
-                    int mined = Mathf.RoundToInt(10 * MiningSkill);
-                    MinedResource += mined;
-                    Debug.Log($"採掘完了{mined}(合計{MinedResource})");
-
-                    //State = ColonistState.Idle;
-                    //timer = 2f;
-                    //StateをColonistState.Sleepに代入してください。
-
-                    //timerを10秒～15秒で設定してください。
-                    timer = Random.Range(2f, 5f);
-                    // 掘り終わったら運搬する状態にします
-                    State = ColonistState.Carry;
-                    //移動先を倉庫の位置にする
-                    targetPosition = Warehouse.position;
-                }
+                HandleMine();
                 break;
 
-            case ColonistState.Carry://運ぶ状態
-                transform.position = Vector3.MoveTowards(
-                transform.position, targetPosition, MoveSpeed * Time.deltaTime);
-
-                //体力が回復するまで休ませるか。
-                //体力があったらもう一回Moveにして採掘場に向かわせるか
-                //休憩場に行って、休憩する
-
-                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
-                {
-                    targetPosition = MarketPosition.position;
-                    // 次の行動を行う(休憩)
-                    State = ColonistState.Rest;
-                    timer = Random.Range(3f, 5f);
-                }
-
+            case ColonistState.Carry:
+                HandleCarry();
                 break;
 
             case ColonistState.Rest:
-                transform.position = Vector3.MoveTowards(
-                transform.position, targetPosition, MoveSpeed * Time.deltaTime);
+                HandleRest();
+                break;
 
-                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
-                {
-                    //空腹度も1秒間に5ポイントずつ回復
-                    hunger += 5f * Time.deltaTime;
-                    //ストレスも1秒間に5ポイント緩和
-                    stress -= 5f * Time.deltaTime;
-                    //現在の体力をじわじわっと回復させる
-                    currentHealth +=RecoveryRate * 2f * Time.deltaTime;
-
-                    //体力と空腹度が80より回復したら
-                    if(currentHealth > 80f && hunger > 80f)
-                    {
-                        timer = 1f;
-                        //状態を待機状態に戻す
-                        State = ColonistState.Idle;
-                    }
-                }
-
+            case ColonistState.Eat:
+                HandleEat();
                 break;
 
             case ColonistState.Sleep:
-                // 体力を秒間8ポイント回復させる
-                currentHealth += RecoveryRate * 8f * Time.deltaTime;
-
-                // ストレスも1秒間に5ポイントずつ減少していく
-                stress -= 5f * Time.deltaTime;
-
-                // もし、コロニストの体力が完全に回復したら
-                if (currentHealth >= MaxHealth)
-                {
-                    State = ColonistState.Idle;
-                    //timerを1秒～5秒で設定してください。
-                    timer = Random.Range(1f, 5f);
-                }
+                HandleSleep();
                 break;
+        }
+    }
+
+    /// <summary>
+    /// 待機中の行動
+    /// </summary>
+    private void HandleIdle()
+    {
+        //現在の体力をじわじわっと回復させる
+        currentHealth += RecoveryRate * 2f * Time.deltaTime;
+
+        //caseとbreakの間に、caseの場合の処理を書く
+        //もしtimerが0秒を下回ったら
+        if (timer <= 0f)
+        {
+            //コロニストの状態を"動く"という状態に変更
+            State = ColonistState.Move;
+            //移動場所を採掘場へ指定する
+            targetPosition = MinePoint;
+            timer = 2f;
+        }
+    }
+
+    /// <summary>
+    /// 移動中の行動
+    /// </summary>
+    private void HandleMove()
+    {
+        transform.position = Vector3.MoveTowards(
+        transform.position, targetPosition, MoveSpeed * Time.deltaTime);
+
+        //現在の体力値から1秒観で5ポイント体力を減らします
+        currentHealth -= FatigueRate * 5f * Time.deltaTime;
+
+        //現在の体力が20ポイントを下回ったら
+        if (currentHealth <= 20f)
+        {
+            //体力を回復するためにSleepにする
+            State = ColonistState.Sleep;
+        }
+
+        // if文はもし、小括弧内の条件だったら、中括弧内の処理を行う
+        // 自分の位置と、ターゲットの位置が10cmより近くなったら
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            // 次の行動を行う
+            State = ColonistState.Mine;
+            //掘削時間が1～5秒の間でランダムになる。
+            timer = Random.Range(3f, 5f);
+        }
+    }
+
+    /// <summary>
+    /// 採掘中の行動
+    /// </summary>
+    private void HandleMine()
+    {
+        //仮で採掘アニメーション再生の代わりにログを出力します
+        Debug.Log("Colonist is mining!");
+
+        //毎フレーム回転させ続ける
+        //1秒間にMiningSkillが3の人は360°回転できる
+        transform.Rotate(Vector3.up * 120f * MiningSkill * Time.deltaTime);
+
+        //現在の体力を秒間10ポイント減少させる
+        currentHealth -= FatigueRate * 10f * Time.deltaTime;
+
+        //現在の体力が20ポイントより少なくなったら
+        if (currentHealth <= 20f)
+        {
+            //体力を回復させるためにSleepにする
+            State = ColonistState.Sleep;
+        }
+
+        if (timer <= 0f)
+        {
+            int mined = Mathf.RoundToInt(10 * MiningSkill);
+            MinedResource += mined;
+            Debug.Log($"採掘完了{mined}(合計{MinedResource})");
+
+            //State = ColonistState.Idle;
+            //timer = 2f;
+            //StateをColonistState.Sleepに代入してください。
+
+            //timerを10秒～15秒で設定してください。
+            timer = Random.Range(2f, 5f);
+            // 掘り終わったら運搬する状態にします
+            State = ColonistState.Carry;
+            //移動先を倉庫の位置にする
+            targetPosition = Warehouse.position;
+        }
+    }
+
+    /// <summary>
+    /// 運搬中の行動
+    /// </summary>
+    private void HandleCarry()
+    {
+        transform.position = Vector3.MoveTowards(
+                transform.position, targetPosition, MoveSpeed * Time.deltaTime);
+
+        //体力が回復するまで休ませるか。
+        //体力があったらもう一回Moveにして採掘場に向かわせるか
+        //休憩場に行って、休憩する
+
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            // 倉庫に資源を置く
+            // まず倉庫のコンポーネント(機能)を取得する
+            Warehouse warehouse = Warehouse.GetComponentInChildren<Warehouse>();
+            // もし、倉庫のコンポーネントが見つかったら
+            if (warehouse != null)
+            {
+                // 倉庫に採掘した量を追加する
+                warehouse.Store(MinedResource);
+                // 倉庫に置いたので、手持ちの採掘量を0にする
+                MinedResource = 0;
+            }
+
+            targetPosition = MarketPosition.position;
+            // 体力があった場合
+            if (currentHealth > 50)
+            {
+                targetPosition = MinePoint;
+                State = ColonistState.Move;
+            }
+            // 体力が危ない場合
+            else
+            {
+                // 次の行動を行う(休憩)
+                State = ColonistState.Rest;
+            }
+            timer = Random.Range(3f, 5f);
+        }
+    }
+
+    /// <summary>
+    /// 休憩中の行動
+    /// </summary>
+    private void HandleRest()
+    {
+        transform.position = Vector3.MoveTowards(
+        transform.position, targetPosition, MoveSpeed * Time.deltaTime);
+
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            // ターゲットポジションが市場じゃなかったら市場に変更する
+            if (targetPosition != MarketPosition.position)
+            {
+                targetPosition = MarketPosition.position;
+            }
+            //ストレスも1秒間に5ポイント緩和
+            stress -= 5f * Time.deltaTime;
+            //現在の体力をじわじわっと回復させる
+            currentHealth += RecoveryRate * 2f * Time.deltaTime;
+
+            //体力と空腹度が80より回復したら
+            if (currentHealth > 80f && stress < 0f)
+            {
+                stress = 0f;
+                timer = 1f;
+                //状態を待機状態に戻す
+                State = ColonistState.Idle;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 睡眠中の行動
+    /// </summary>
+    private void HandleSleep()
+    {
+        // 体力を秒間8ポイント回復させる
+        currentHealth += RecoveryRate * 8f * Time.deltaTime;
+
+        // ストレスも1秒間に5ポイントずつ減少していく
+        stress -= 5f * Time.deltaTime;
+
+        // もし、コロニストの体力が完全に回復したら
+        if (currentHealth >= MaxHealth)
+        {
+            State = ColonistState.Idle;
+            //timerを1秒～5秒で設定してください。
+            timer = Random.Range(1f, 5f);
+        }
+    }
+
+    /// <summary>
+    /// 食事中の行動
+    /// </summary>
+    private void HandleEat()
+    {
+        if (targetPosition != BakeryPosition.position)
+        {
+            targetPosition = BakeryPosition.position;
+        }
+
+        transform.position = Vector3.MoveTowards(
+        transform.position, targetPosition, MoveSpeed * Time.deltaTime);
+
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            // 食事の場所に行ったら
+            hunger += 20f * Time.deltaTime;
+
+            // ストレスも1秒間に5ポイントずつ減少していく
+            stress -= 5f * Time.deltaTime;
+
+            // 体力も回復させる
+            currentHealth += 2f * Time.deltaTime;
+
+            if (hunger >= 100f)
+            {
+                hunger = 100;
+                Debug.Log($"{name}は満腹になりました");
+                State = ColonistState.Idle;
+            }
         }
     }
 }

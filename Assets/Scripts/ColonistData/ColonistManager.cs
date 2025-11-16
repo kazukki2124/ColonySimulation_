@@ -40,6 +40,11 @@ public class ColonistManager : MonoBehaviour
     public Transform MarketPoint;
 
     /// <summary>
+    /// 食事場の位置
+    /// </summary>
+    public Transform BakeryPoint;
+
+    /// <summary>
     /// 住人に付けられる名前の一覧
     /// </summary>
     private string[] possibleNames =
@@ -94,6 +99,9 @@ public class ColonistManager : MonoBehaviour
 
             // コロニストに市場の場所を教える
             Colonists[i].MarketPosition = MarketPoint;
+
+            // コロニストに食事場の場所を教える
+            Colonists[i].BakeryPosition = BakeryPoint;
 
             //コロニストのUI表示用のマネージャに生成されたColonistAIをセット
             ColonistUIManagers[i].SetColonistAI(Colonists[i]);
