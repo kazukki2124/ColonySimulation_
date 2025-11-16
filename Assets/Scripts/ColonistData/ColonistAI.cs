@@ -94,6 +94,7 @@ public class ColonistAI : MonoBehaviour
     /// <summary>
     /// 空腹度
     /// </summary>
+    [SerializeField]
     private float hunger = 100f;
 
     /// <summary>
@@ -126,6 +127,11 @@ public class ColonistAI : MonoBehaviour
     /// ベーカリー(食事をする場所)の位置
     /// </summary>
     public Transform BakeryPosition;
+
+    /// <summary>
+    /// ベーカリーの機能
+    /// </summary>
+    public Bakery Bakery;
 
     void Start()
     {
@@ -186,7 +192,7 @@ public class ColonistAI : MonoBehaviour
         if (!IsAlive)
         {
             State = ColonistState.Dead;
-            Debug.Log($"死亡しました");
+            Debug.Log($"{name}は死亡しました");
             return;
         }
         //1フレームにかかった時間をtimerから減算していきます
@@ -242,6 +248,10 @@ public class ColonistAI : MonoBehaviour
                 HandleSleep();
                 break;
         }
+
+        // Mathf.Clamp(固定する値,最小値,最大値)で最小値から最大値までの値に
+        // 制限してくれます
+        currentHealth = Mathf.Clamp(currentHealth, 0f, MaxHealth);
     }
 
     /// <summary>
@@ -414,7 +424,7 @@ public class ColonistAI : MonoBehaviour
     private void HandleSleep()
     {
         // 体力を秒間8ポイント回復させる
-        currentHealth += RecoveryRate * 8f * Time.deltaTime;
+        currentHealth += hunger * 8f * Time.deltaTime;
 
         // ストレスも1秒間に5ポイントずつ減少していく
         stress -= 5f * Time.deltaTime;
@@ -443,14 +453,28 @@ public class ColonistAI : MonoBehaviour
 
         if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
         {
-            // 食事の場所に行ったら
-            hunger += 20f * Time.deltaTime;
+            // ベーカリーで食事が出来た場合
+            if (Bakery.CanEat())
+            {
+                // 食事を行いFoodStockを減少させる
+                Bakery.Eat();
 
-            // ストレスも1秒間に5ポイントずつ減少していく
-            stress -= 5f * Time.deltaTime;
+                // 食事の場所に行ったら
+                hunger += 20f * Time.deltaTime;
 
-            // 体力も回復させる
-            currentHealth += 2f * Time.deltaTime;
+                // ストレスも1秒間に5ポイントずつ減少していく
+                stress -= 5f * Time.deltaTime;
+
+                // 体力も回復させる
+                currentHealth += 2f * RecoveryRate * Time.deltaTime;
+
+
+            }
+            else // 食料がない・・・
+            {
+                // 体力が回復できない
+                currentHealth += 2f * hunger * Time.deltaTime;
+            }
 
             if (hunger >= 100f)
             {

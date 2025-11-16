@@ -103,6 +103,11 @@ public class ColonistManager : MonoBehaviour
             // コロニストに食事場の場所を教える
             Colonists[i].BakeryPosition = BakeryPoint;
 
+            var bakery = BakeryPoint.GetComponentInChildren<Bakery>();
+            Debug.Log(bakery);
+            // コロニストにBakeryの状態を教える
+            Colonists[i].Bakery = bakery;
+
             //コロニストのUI表示用のマネージャに生成されたColonistAIをセット
             ColonistUIManagers[i].SetColonistAI(Colonists[i]);
         }
