@@ -108,9 +108,25 @@ public class ColonistAI : MonoBehaviour
     private float hunger = 100f;
 
     /// <summary>
+    /// 外部から空腹値を取得する
+    /// </summary>
+    public float GetHunger
+    {
+        get { return hunger; }
+    }
+
+    /// <summary>
     /// ストレス
     /// </summary>
     private float stress = 0f;
+
+    /// <summary>
+    /// 外部からストレス値を取得する
+    /// </summary>
+    public float GetStress
+    {
+        get { return stress; }
+    }
 
     /// <summary>
     /// 生きているかの判定
