@@ -245,18 +245,21 @@ public class ColonistAI : MonoBehaviour
         // 1秒に1ポイントずつ、ストレスがかかっていきます
         stress += 1f * Time.deltaTime;
 
-        // ストレスが限界(100)を越えたら勝手に休憩に入る
-        if (stress >= 100f)
-        {
-            Debug.Log($"{name}はストレスが限界です!休憩に入ります！");
-            State = ColonistState.Rest;
-        }
-        // 空腹度が限界(30)を下回ったら勝手に休憩に入る
-        else if (hunger <= 30f)
+        //Hungerが最優先で処理
+        // 空腹度が限界(30)を下回ったら勝手に食事に入る
+        if (hunger <= 30f)
         {
             Debug.Log($"{name}は空腹です!休憩に入ります！");
             State = ColonistState.Eat;
         }
+
+        // ストレスが限界(100)を越えたら勝手に休憩に入る
+        if (State != ColonistState.Eat && stress >= 100f)
+        {
+            Debug.Log($"{name}はストレスが限界です!休憩に入ります！");
+            State = ColonistState.Rest;
+        }
+
 
         //小括弧の中の値(変数)を使って処理を分岐させます
         switch (State)
