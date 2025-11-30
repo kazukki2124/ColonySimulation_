@@ -4,11 +4,11 @@ using TMPro;
 public class WarehouseUI : MonoBehaviour
 {
     public Warehouse Warehouse;
-    public TextMeshProUGUI ResourcesText;
+    public TextMeshProUGUI MinedResourcesText;
 
     private void Update()
     {
         // ‘qŒÉ“à‚ÌŽ‘Œ¹—Ê‚ð•\Ž¦
-        ResourcesText.text = $"{Warehouse.StoredResources}/{Warehouse.GetMaxStockAmount}";
+        MinedResourcesText.text = $"Mined resource : {Warehouse.StoredResources}/{Warehouse.GetMaxStockAmount}";
     }
 }
