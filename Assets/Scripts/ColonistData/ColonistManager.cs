@@ -45,6 +45,11 @@ public class ColonistManager : MonoBehaviour
     public Transform BakeryPoint;
 
     /// <summary>
+    /// 建築現場の位置
+    /// </summary>
+    public Transform ConstructionPoint;
+
+    /// <summary>
     /// 住人に付けられる名前の一覧
     /// </summary>
     private string[] possibleNames =
@@ -53,7 +58,9 @@ public class ColonistManager : MonoBehaviour
         "Hanako",
         "Ken",
         "Mika",
-        "Aki"
+        "Aki",
+        "Ryu",
+        "Mai"
     };
 
     private List<string> usedName = new List<string>();
@@ -110,6 +117,9 @@ public class ColonistManager : MonoBehaviour
             Debug.Log(bakery);
             // コロニストにBakeryの状態を教える
             Colonists[i].Bakery = bakery;
+
+            // コロニストに建築現場を教える
+            Colonists[i].ConstructionSite = ConstructionPoint.GetComponent<ConstructionSite>();
 
             //コロニストのUI表示用のマネージャに生成されたColonistAIをセット
             ColonistUIManagers[i].SetColonistAI(Colonists[i]);
