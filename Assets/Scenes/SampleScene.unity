@@ -5829,7 +5829,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConstructionSite
   BuildingName: House
-  CompletedPrefab: {fileID: 100000, guid: 81ae10d5415799d4db940c6fe498e861, type: 3}
+  CompletedPrefab: {fileID: 7022116343783367391, guid: 0daaeaad462ede24bb8d9eb6f1058fd9, type: 3}
   BuildPoint: {fileID: 0}
   RequiredWork: 100
   ResourcePerWork: 1
