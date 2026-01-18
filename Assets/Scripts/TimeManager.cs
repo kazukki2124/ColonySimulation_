@@ -8,15 +8,39 @@ public class TimeManager : MonoBehaviour
     public Button Speed2xButton;//2”{‘¬
     public Button Speed3xButton;//3”{‘¬
 
+    public AudioClip StopSE;
+    public AudioClip PlaySE;
+    public AudioClip SpeedUpSE;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         //ƒQ[ƒ€‚ªŠJŽn‚µ‚½‚Æ‚«‚Í“™”{‘¬‚É‚µ‚Ä‚¨‚­
         SetTimeScale(1f);
-        PauseButton.onClick.AddListener(() => SetTimeScale(0f));   //PauseButton‚ª‰Ÿ‚³‚ê‚½Žž‚ÉSetTimeScale‚ð0‚É‚µ‚Ä’âŽ~‚·‚é
-        PlayButton.onClick.AddListener(() => SetTimeScale(1f));    //PlayButton‚ª‰Ÿ‚³‚ê‚½Žž‚ÉSetTimeScale‚ð1‚É‚µ‚Ä“™”{‘¬‚É‚·‚é
-        Speed2xButton.onClick.AddListener(() => SetTimeScale(2f)); //Speed2xButton‚ª‰Ÿ‚³‚ê‚½Žž‚ÉSetTimeScale‚ð2‚É‚µ‚Ä2”{‘¬‚É‚·‚é
-        Speed3xButton.onClick.AddListener(() => SetTimeScale(3f)); //Speed3xButton‚ª‰Ÿ‚³‚ê‚½Žž‚ÉSetTimeScale‚ð3‚É‚µ‚Ä3”{‘¬‚É‚·‚é
+
+        PauseButton.onClick.AddListener(() =>
+        {
+            SetTimeScale(0f);   //PauseButton‚ª‰Ÿ‚³‚ê‚½Žž‚ÉSetTimeScale‚ð0‚É‚µ‚Ä’âŽ~‚·‚é
+            SEManager.Instance.PlaySE(StopSE);
+        });
+
+        PlayButton.onClick.AddListener(() =>
+        {
+            SetTimeScale(1f);    //PlayButton‚ª‰Ÿ‚³‚ê‚½Žž‚ÉSetTimeScale‚ð1‚É‚µ‚Ä“™”{‘¬‚É‚·‚é
+            SEManager.Instance.PlaySE(PlaySE);
+        });
+
+        Speed2xButton.onClick.AddListener(() =>
+        {
+            SetTimeScale(2f); //Speed2xButton‚ª‰Ÿ‚³‚ê‚½Žž‚ÉSetTimeScale‚ð2‚É‚µ‚Ä2”{‘¬‚É‚·‚é
+            SEManager.Instance.PlaySE(SpeedUpSE);
+        });
+
+        Speed3xButton.onClick.AddListener(() =>
+        {
+            SetTimeScale(3f); //Speed3xButton‚ª‰Ÿ‚³‚ê‚½Žž‚ÉSetTimeScale‚ð3‚É‚µ‚Ä3”{‘¬‚É‚·‚é
+            SEManager.Instance.PlaySE(SpeedUpSE);
+        });
     }
 
     /// <summary>
